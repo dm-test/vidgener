@@ -19,7 +19,6 @@ public class Encoder {
     private String encodeKey;
 
     public Encoder(String inputText, String encodeKey) {
-        // непустые
         this.inputText = inputText;
         this.encodeKey = encodeKey;
     }
