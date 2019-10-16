@@ -1,5 +1,6 @@
 package ru.github.dmtest;
 
+import org.apache.commons.io.input.CloseShieldInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
-
 
 public class Encoder {
     private static final Logger LOG = LoggerFactory.getLogger(Encoder.class);
@@ -35,16 +35,26 @@ public class Encoder {
     }
 
     private static String getTextFromKeyboard() {
-        try {
-            InputStreamReader isr = new InputStreamReader(System.in);
-            BufferedReader br = new BufferedReader(isr);
-            String text = br.readLine().toUpperCase();
-            LOG.info("Введена строка: {}", text);
-            return text;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new CloseShieldInputStream(System.in)))) {
+            while (true) {
+                String text = br.readLine().toUpperCase();
+                if (isCorrectInputText(text)) {
+                    LOG.info("Введена строка: {}", text);
+                    return text;
+                }
+                LOG.warn("Введена некорректная строка. Строка должна быть непустой и содержать только символы: {}", ABC);
+                LOG.info("Повторите ввод:");
+            }
         } catch (IOException e) {
             LOG.info("Не удалось считать введенную строку!");
             throw new IOError(e);
         }
+    }
+
+    private static boolean isCorrectInputText(String text) {
+        boolean isEmpty = text.isEmpty();
+        boolean containsInAbc = text.chars().mapToObj(c -> (char) c).allMatch(ABC::contains);
+        return !isEmpty && containsInAbc;
     }
 
     private String encode() {
